@@ -1,63 +1,61 @@
 # CartFix
 
-Fixes loaded carts in R.E.P.O. feeling heavy, sluggish, or slow to push and turn.
+Fixes loaded carts in R.E.P.O. feeling heavy, sluggish, and slow to push and turn.
 
 <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/control.gif" width="800">
 
-*Empty cart, CartFix toggling. No visible difference — the mod only touches loaded behavior, so normal play isn't affected.*
+*Control clip: empty cart, CartFix toggling mid-way. No visible difference — the mod doesn't touch empty-cart behavior.*
 
 ## Why a loaded cart stalls
 
-Empty cart turns at roughly 4 rad/s. Fill it with 70 valuables and it drops to roughly 0.4 rad/s — a 10x stall from the payload alone. A full cart barely corners, feels heavy to push, and takes forever to get up to speed.
+An empty cart turns at roughly 4 rad/s. Load it up with 70 valuables and that drops to around 0.4 rad/s. A 10x hit from payload alone. The cart barely corners, feels heavy to push, and takes forever to get back up to speed.
 
-`PhysGrabCart.rb.mass` is 8 kg (4 kg while grabbed). 70 valuables at 0.5 kg each is 35 kg sitting inside an 8 kg container. Unity's contact solver gives the payload most of the impulse share any time the cart tries to move, and items physically block the cart from reaching the velocity that `CartSteer` writes each tick.
+The cause is a mass mismatch. `PhysGrabCart.rb.mass` sits around 8 kg, and the game overrides it down to 4 kg while someone is actively pushing. 70 small valuables at 0.5 kg each is 35 kg sitting inside a 4 kg cart. Every physics tick, Unity's contact solver hands the payload most of the impulse share, and the items physically resist the velocity `CartSteer` is trying to write.
 
-Whether this is a bug or an intentional weight mechanic isn't clear. The game already halves cart mass on grab (`CartMassOverride(4f)`), suggesting the developers wanted a light, responsive cart. Payload-induced drag just wasn't compensated for.
+Whether this was a deliberate weight mechanic or an oversight isn't clear. Vanilla already halves cart mass during steering, which suggests the cart is supposed to feel light and responsive. The payload drag just wasn't accounted for.
 
-## Before and after
+## Comparisons
 
-Each clip is one take of one fully loaded cart, with CartFix toggling mid-clip. Same cart, same input on both sides of the toggle. Watch what the payload does to the cart — and watch that stop once the fix is on.
+Each clip is a single take with CartFix toggling in the middle. Same cart, same input on both sides of the toggle. Two speeds per scenario; the faster the input, the more obvious the difference becomes.
 
-### Back and forth
+### Back and forth push
 
-<img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/slow_back_and_forth.gif" width="800">
+| Slow | Fast |
+| :---: | :---: |
+| <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/slow_back_and_forth.gif" width="420"> | <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/fast_back_and_forth.gif" width="420"> |
 
-Slow push, stop, reverse. In vanilla, each direction change nearly parks the cart — the payload drags the momentum out of every reversal. With CartFix, the cart keeps the momentum the input is asking for.
-
-<img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/fast_back_and_forth.gif" width="800">
-
-Same pattern, harder push. The gap between "what the input says" and "what the cart does" gets worse under load. With the fix, the cart tracks the input the way an empty cart would.
+Push, stop, reverse. In vanilla every direction change nearly parks the cart because the payload drags momentum out of each reversal. With CartFix the cart carries the momentum the input is asking for. The gap between input and response widens under load, and the harder you push the more obvious it gets.
 
 ### Grab and spin
 
-<img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/slow_grab_and_spin.gif" width="800">
+| Slow | Fast |
+| :---: | :---: |
+| <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/slow_grab_and_spin.gif" width="420"> | <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/fast_grab_and_spin.gif" width="420"> |
 
-Slow rotation while grabbed. Watch the items in the tray: in vanilla, they slide into the cart walls because the cart rotates around them instead of bringing them along. With CartFix, they rotate with the cart.
-
-<img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/fast_grab_and_spin.gif" width="800">
-
-Fast rotation. Same behavior, more obvious. Items stop bouncing out on turns.
+Rotation while grabbed. Watch the items in the tray. In vanilla the cart rotates around them and they end up against the walls. With CartFix they come along with the rotation.
 
 ### Basic maneuver
 
-<img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/slow_basic_maneuver.gif" width="800">
+| Slow | Fast |
+| :---: | :---: |
+| <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/slow_basic_maneuver.gif" width="420"> | <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/fast_basic_maneuver.gif" width="420"> |
 
-Regular corridor pushing, loaded, slow. A loaded cart in vanilla feels like dragging an anchor. With CartFix it feels like a cart.
-
-<img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/fast_basic_maneuver.gif" width="800">
-
-Same at speed. Corners tighten, acceleration comes back, items stay put.
+Normal corridor pushing. Corners tighten, acceleration comes back, and items stay where you put them.
 
 ## How CartFix fixes it
 
-Cart Rigidbody mass is scaled 6x at `PhysGrabCart.Start`, with a matching prefix on `CartMassOverride` so the grabbed/idle ratio stays consistent. Contact resolution stops draining the cart's momentum into the payload, and a loaded cart turns close to the empty-cart rate.
+Two small Harmony patches, each scoped to one specific cart situation.
 
-In-cart items sync to cart velocity every physics tick — including the cart's angular velocity at each item's position — so items follow through turns instead of sliding into cart walls or lagging behind.
+**Mass during an active push.** When `CartMassOverride` fires during a grab, CartFix sums the masses of items currently in the cart's tray and adds twice that to the override. Empty carts still get the vanilla 4. A loaded cart ends up heavier than its own payload, which is what keeps cart momentum from being drained into items on every contact. Steering input itself is untouched; `CartSteer` writes velocity directly, independent of mass.
 
-Host-side only. Install on the host and every player in the lobby benefits. Zero config.
+**In-cart adhesion below 1 m/s.** Vanilla already lerps in-cart items toward cart velocity once the cart is moving faster than 1 m/s. CartFix adds a softer pull below that threshold so items don't drift into cart walls during slow turns or accel-from-rest. Thrown items keep their momentum. A relative-velocity gate skips items still in flight.
+
+Nothing else is modified. Weak-grab lifts, door collisions while coasting, empty-cart physics: unchanged.
+
+Host-side only. The underlying game methods only run on the host in multiplayer, so mod effects automatically sync to all players via the existing cart replication. Install on the host, everyone in the lobby benefits. No config.
 
 ## Compatibility
 
-Pairs with [CartSpeedSync](https://thunderstore.io/c/repo/p/discjenny/CartSpeedSync/): that mod raises the scripted top speed, CartFix makes the cart reach it under load.
+Pairs well with [CartSpeedSync](https://thunderstore.io/c/repo/p/discjenny/CartSpeedSync/). CartSpeedSync raises the scripted cart speed cap, CartFix makes a loaded cart actually reach it.
 
-Patches `PhysGrabCart.Start`, `PhysGrabCart.CartMassOverride`, `PhysGrabObjectImpactDetector.FixedUpdate`. Should coexist with any mod that doesn't touch those.
+Harmony targets: `PhysGrabCart.CartMassOverride` (prefix), `PhysGrabObjectImpactDetector.FixedUpdate` (postfix). Should coexist with any mod that doesn't patch those two methods.
