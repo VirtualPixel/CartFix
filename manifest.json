@@ -1,6 +1,6 @@
 {
   "name": "CartFix",
-  "version_number": "1.0.0",
+  "version_number": "1.0.1",
   "website_url": "https://github.com/VirtualPixel/CartFix",
   "description": "Fixes loaded carts feeling heavy, sluggish, and slow to turn. Scales cart mass so payload stops draining momentum, and keeps items synced to the cart through turns. Host-side only; install on the host and all players benefit.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2305"]
