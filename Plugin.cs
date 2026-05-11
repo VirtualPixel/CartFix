@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace CartFix;
 
-[BepInPlugin("Vippy.CartFix", "CartFix", "1.0.2")]
+[BepInPlugin("Vippy.CartFix", "CartFix", "1.0.3")]
 public class Plugin : BaseUnityPlugin
 {
     // Cart mass override while being steered: vanilla 4f plus LoadMassFactor

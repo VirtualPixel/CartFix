@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- **Updated:** Rebuilt for R.E.P.O. v0.4. The patched methods (`PhysGrabCart.CartMassOverride`, `PhysGrabObjectImpactDetector.FixedUpdate`) and every cart field the mod reads are unchanged in v0.4 — recompile is sufficient and behavior is identical to 1.0.2 on the new game build.
+
 ## 1.0.2
 
 - Mass scaling is now load-aware. `CartMassOverride` adds twice the summed mass of items currently in the cart's tray, so an empty cart stays at vanilla 4 and a loaded cart scales proportionally with its payload. Replaces the old flat 6x multiplier, which over-weighted empty carts and under-scaled very heavy loads.

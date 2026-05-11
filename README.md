@@ -2,6 +2,8 @@
 
 Fixes loaded carts in R.E.P.O. feeling heavy, sluggish, and slow to push and turn.
 
+> **v1.0.3 — updated for R.E.P.O. v0.4.** Rebuilt against the latest game release. 1.0.2 will not load on v0.4. Update to 1.0.3 and you're back in business.
+
 <img src="https://raw.githubusercontent.com/VirtualPixel/CartFix/main/media/control.gif" width="800">
 
 *Control clip: empty cart, CartFix toggling mid-way. No visible difference — the mod doesn't touch empty-cart behavior.*
