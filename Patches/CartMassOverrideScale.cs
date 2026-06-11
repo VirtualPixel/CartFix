@@ -16,7 +16,7 @@ namespace CartFix.Patches;
 //
 // Scope stays tight to active steering. CartMassOverride is only called from
 // CartSteer and SmallCartLogic, both of which already gate on
-// IsMasterClientOrSingleplayer — so this Prefix is inherently host-only and
+// IsMasterClientOrSingleplayer, so this Prefix is inherently host-only and
 // never fires on remote clients. And because CartSteer writes velocity
 // directly (mass-independent), steering input feel is unchanged. Only
 // cart-vs-items contact resolution gets heavier while pushing.
@@ -48,6 +48,6 @@ static class CartMassOverrideScalePatch
             loadMass += pgo.massOriginal > 0f ? pgo.massOriginal : pgo.rb.mass;
         }
 
-        mass += loadMass * Plugin.LoadMassFactor;
+        mass += loadMass * Plugin.LoadMassFactor.Value;
     }
 }

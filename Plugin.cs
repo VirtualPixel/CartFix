@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 #if DEBUG
 using System.Collections;
@@ -13,16 +14,19 @@ namespace CartFix;
 [BepInPlugin("Vippy.CartFix", "CartFix", "1.0.3")]
 public class Plugin : BaseUnityPlugin
 {
-    // Cart mass override while being steered: vanilla 4f plus LoadMassFactor
-    // times the summed mass of items in the cart. At 2f the cart is always
-    // at least twice as heavy as whatever it's carrying, which is enough for
-    // cart momentum to survive contacts with its own payload.
-    internal const float LoadMassFactor = 2f;
+    // Cart mass override while being steered: vanilla 4f plus this factor
+    // times the summed mass of items in the cart. Config-bound so a future
+    // game rebalance doesn't need a rebuild to tune around.
+    internal static ConfigEntry<float> LoadMassFactor = null!;
 
     internal static bool Enabled { get; private set; } = true;
 
     void Awake()
     {
+        LoadMassFactor = Config.Bind("CartFix", "Load mass factor", 2f, new ConfigDescription(
+            "Extra cart mass per unit of payload mass while steering. At 2 the cart is always at least " +
+            "twice as heavy as its cargo, enough for momentum to survive contacts with the payload. 0 is vanilla.",
+            new AcceptableValueRange<float>(0f, 5f)));
         new Harmony(Info.Metadata.GUID).PatchAll();
         Logger.LogInfo($"{Info.Metadata.GUID} v{Info.Metadata.Version} loaded.");
     }
@@ -193,7 +197,7 @@ public class Plugin : BaseUnityPlugin
                 if (p == null || p.rb == null) continue;
                 loadMass += p.massOriginal > 0f ? p.massOriginal : p.rb.mass;
             }
-            float addedOverride = loadMass * LoadMassFactor;
+            float addedOverride = loadMass * LoadMassFactor.Value;
 
             diag.Add($"Cart {nearestCartDist:F1}m   lin {linVel:F2} m/s   ang {angVel:F2} rad/s");
             diag.Add(overrideActive
