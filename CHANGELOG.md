@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.4
+
+- The load mass factor is a config slider now (0 to 5, default 2, 0 is vanilla). The hardcoded constant worked, but a game rebalance would have needed a rebuild to retune around.
+
 ## 1.0.3
 
 - **Updated:** Rebuilt for R.E.P.O. v0.4. The patched methods (`PhysGrabCart.CartMassOverride`, `PhysGrabObjectImpactDetector.FixedUpdate`) and every cart field the mod reads are unchanged in v0.4, so a recompile is sufficient and behavior is identical to 1.0.2 on the new game build.
