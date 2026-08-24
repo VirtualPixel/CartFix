@@ -16,8 +16,17 @@ static class CartPhysics
     const float LerpCoefficient = 15f;         // ~0.3 per tick at 50 Hz
     const float SettledRelativeSpeed = 1.5f;   // m/s; faster than this and the item is still in flight
 
+    public static bool IsVanillaFlatMass(float mass)
+    {
+        return mass == SteerMass || mass == LockedSmallCartMass;
+    }
+
+    // Anything other than the flat 4 / 8 means the game or another mod already
+    // changed this value. Stacking our payload term on top would double-fix, so
+    // the number passes through untouched.
     public static float OverrideMass(float vanillaMass, float payloadMass, float factor)
     {
+        if (!IsVanillaFlatMass(vanillaMass)) return vanillaMass;
         return vanillaMass + payloadMass * factor;
     }
 

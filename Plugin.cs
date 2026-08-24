@@ -1,5 +1,6 @@
 using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using HarmonyLib;
 #if DEBUG
 using System.Collections;
@@ -20,9 +21,11 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<float> LoadMassFactor = null!;
 
     internal static bool Enabled { get; private set; } = true;
+    internal static ManualLogSource Log { get; private set; } = null!;
 
     void Awake()
     {
+        Log = Logger;
         LoadMassFactor = Config.Bind("CartFix", "Load mass factor", 2f, new ConfigDescription(
             "Extra cart mass per unit of payload mass while steering. At 2 the cart is always at least " +
             "twice as heavy as its cargo, enough for momentum to survive contacts with the payload. 0 is vanilla.",
