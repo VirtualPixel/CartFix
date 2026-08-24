@@ -41,6 +41,11 @@
     <Publicize Include="Assembly-CSharp" />
   </ItemGroup>
 
+  <!-- The csproj sits at the repo root, so the SDK would otherwise glob the tests in. -->
+  <ItemGroup>
+    <Compile Remove="CartFix.Tests/**" />
+  </ItemGroup>
+
   <!-- Direct game DLL references. R.E.P.O.GameLibs.Steam doesn't yet ship stubs for the
        latest game build, so we point at the local install. Drop these and add the NuGet
        package back once the stubs catch up. -->

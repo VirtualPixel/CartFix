@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>CartFix.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Same game path resolution as the mod. The tests only need Vector3 math, and the
+       UnityEngine.Modules NuGet stubs throw at runtime, so the game's real CoreModule
+       is loaded instead. -->
+  <PropertyGroup>
+    <UserHome Condition="'$(UserHome)' == '' and '$(HOME)' != ''">$(HOME)</UserHome>
+    <UserHome Condition="'$(UserHome)' == '' and '$(USERPROFILE)' != ''">$(USERPROFILE)</UserHome>
+    <RepoManagedDir Condition="'$(RepoManagedDir)' == '' and '$(REPO_MANAGED_DIR)' != ''">$(REPO_MANAGED_DIR)</RepoManagedDir>
+    <RepoManagedDir Condition="'$(RepoManagedDir)' == '' and Exists('$(UserHome)/.local/share/Steam/steamapps/common/REPO/REPO_Data/Managed')">$(UserHome)/.local/share/Steam/steamapps/common/REPO/REPO_Data/Managed</RepoManagedDir>
+    <RepoManagedDir Condition="'$(RepoManagedDir)' == '' and Exists('C:/Program Files (x86)/Steam/steamapps/common/REPO/REPO_Data/Managed')">C:/Program Files (x86)/Steam/steamapps/common/REPO/REPO_Data/Managed</RepoManagedDir>
+    <RepoManagedDir Condition="'$(RepoManagedDir)' == '' and Exists('D:/SteamLibrary/steamapps/common/REPO/REPO_Data/Managed')">D:/SteamLibrary/steamapps/common/REPO/REPO_Data/Managed</RepoManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RepoManagedDir)/UnityEngine.CoreModule.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Compile the mod's pure helper straight in; the mod DLL itself needs BepInEx and
+       the game at runtime, which a test host does not have. -->
+  <ItemGroup>
+    <Compile Include="../Services/CartPhysics.cs" Link="Services/CartPhysics.cs" />
+  </ItemGroup>
+
+</Project>
