@@ -5,3 +5,4 @@ obj/
 *.suo
 *.afphoto
 BuildZip/
+graphify-out/
