@@ -38,7 +38,7 @@ static class CartMassOverrideScalePatch
             if (!warnedUnknownMass)
             {
                 warnedUnknownMass = true;
-                Plugin.Log.LogWarning($"[CartMass] CartMassOverride got {mass:F2}, not the flat 4 / 8 this build was tuned against. Leaving cart mass alone.");
+                Plugin.Log.LogWarning($"[CartMass] got {mass:F2}, expected 4 or 8, standing down");
             }
             return;
         }
