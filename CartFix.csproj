@@ -5,7 +5,7 @@
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>Vippy</Authors>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <RootNamespace>CartFix</RootNamespace>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -71,5 +71,64 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+
+  <!-- Generate BuildInfo.g.cs from $(Version) so the plugin attribute always matches the csproj. -->
+  <Target Name="GenerateBuildInfo" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <BuildInfoContent>// &lt;auto-generated/&gt;
+namespace CartFix
+{
+    internal static class BuildInfo
+    {
+        public const string Version = "$(Version)"%3B
+    }
+}
+</BuildInfoContent>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)/BuildInfo.g.cs" Lines="$(BuildInfoContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <!-- Inline C# task: regex-replace manifest.json's version_number, write only if changed. -->
+  <UsingTask TaskName="UpdateManifestVersion" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ManifestPath ParameterType="System.String" Required="true" />
+      <NewVersion ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var enc = new UTF8Encoding(false);
+        var content = File.ReadAllText(ManifestPath, enc);
+        var updated = Regex.Replace(content, "\"version_number\"\\s*:\\s*\"[^\"]*\"", "\"version_number\": \"" + NewVersion + "\"");
+        if (updated != content) File.WriteAllText(ManifestPath, updated, enc);
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!-- Package the Thunderstore upload zip after every Build. -->
+  <Target Name="PackageMod" AfterTargets="Build">
+    <PropertyGroup>
+      <BuildZipParent>$(MSBuildProjectDirectory)/BuildZip</BuildZipParent>
+      <StageDir>$(BuildZipParent)/CartFix</StageDir>
+      <OutputZip>$(BuildZipParent)/CartFix.zip</OutputZip>
+      <SourceManifest>$(MSBuildProjectDirectory)/manifest.json</SourceManifest>
+    </PropertyGroup>
+
+    <UpdateManifestVersion ManifestPath="$(SourceManifest)" NewVersion="$(Version)" />
+
+    <RemoveDir Directories="$(StageDir)" />
+    <MakeDir Directories="$(StageDir)" />
+
+    <Copy SourceFiles="$(OutputPath)CartFix.dll" DestinationFolder="$(StageDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/README.md;$(MSBuildProjectDirectory)/CHANGELOG.md;$(SourceManifest);$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(StageDir)" />
+
+    <Delete Files="$(OutputZip)" />
+    <ZipDirectory SourceDirectory="$(StageDir)" DestinationFile="$(OutputZip)" Overwrite="true" />
+
+    <Message Importance="high" Text="[PackageMod] DLL -> $(OutputPath)" />
+    <Message Importance="high" Text="[PackageMod] Thunderstore zip -> $(OutputZip) (v$(Version))" />
+  </Target>
 
 </Project>

@@ -1,6 +1,6 @@
 {
   "name": "CartFix",
-  "version_number": "1.0.4",
+  "version_number": "1.0.5",
   "website_url": "https://github.com/VirtualPixel/CartFix",
   "description": "Loaded carts no longer feel heavy or slow to turn on R.E.P.O. v0.4. Cart mass scales with payload so items stop draining momentum, and in-cart items stay put through slow turns. Host-only; install on the host, all players benefit.",
   "dependencies": [
