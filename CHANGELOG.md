@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.5 (unreleased)
+
+- Stand-down guards. If `CartMassOverride` arrives with anything but vanilla's flat 4 / 8 (a game-side fix, or another mod's prefix), the value passes through untouched and the log says so once. The in-cart pull now skips any tick where vanilla already moved the item, so the two lerps can't stack even if semiwork lowers their 1 m/s threshold.
+- Dropped a redundant `GetComponent<PhysGrabCart>` per in-cart item per physics tick; `currentCart` already is one.
+- Cart math lives in `Services/CartPhysics.cs` with an xunit project (`CartFix.Tests`) covering it. Debug-only HUD and spawner moved to `Dev/DevTools.cs`; nothing in the shipped DLL changed there.
+- Plugin version comes from the csproj now and the build writes `BuildZip/CartFix.zip` with `manifest.json` synced.
+- README: documents the `Load mass factor` config (it said "No config" since 1.0.4), install notes, contact links.
+
 ## 1.0.4
 
 - The load mass factor is a config slider now (0 to 5, default 2, 0 is vanilla). The hardcoded constant worked, but a game rebalance would have needed a rebuild to retune around.
