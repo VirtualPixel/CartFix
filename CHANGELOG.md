@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- Updated for the 0.5 game build. The cart math is untouched.
+
 ## 1.0.5
 
 - Stand-down guards. If `CartMassOverride` arrives with anything but vanilla's flat 4 / 8 (a game-side fix, or another mod's prefix), the value passes through untouched and the log says so once. The in-cart pull now skips any tick where vanilla already moved the item, so the two lerps can't stack even if semiwork lowers their 1 m/s threshold.
